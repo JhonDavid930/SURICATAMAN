@@ -33,3 +33,7 @@ Este script simplifica el proceso de instalación y configuración, permitiéndo
 
    ```bash
    chmod +x instalar_suricata.sh
+
+Ejecuta el script en la misma rama o directorio donde se descargó el archivo:
+   ```bash
+  ./instalar_suricata.sh
