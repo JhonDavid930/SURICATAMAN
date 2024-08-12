@@ -23,12 +23,14 @@ Instrucciones de Uso:
 
 Asegúrate de otorgar permisos de ejecución al script antes de ejecutarlo. Puedes hacerlo con el siguiente comando:
 
-bash
+
 Copiar código
+
+
 chmod +x instalar_suricata.sh
 Ejecuta el script en la misma rama o directorio donde se descargó el archivo:
 
-bash
+
 Copiar código
 ./instalar_suricata.sh
 Con estos simples pasos, tendrás Suricata instalado y configurado de manera automática en tu sistema.
