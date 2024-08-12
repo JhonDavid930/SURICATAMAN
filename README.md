@@ -1,5 +1,5 @@
 # Suricata-instalacion
-Instalación Automática de Suricata
+Instalación Automática de Suricata.
 Este script en Bash ha sido diseñado para instalar y configurar de forma rápida y eficaz Suricata, una poderosa herramienta de monitorización y detección de intrusiones en redes.
 
 Características:
