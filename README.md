@@ -32,8 +32,8 @@ Este script simplifica el proceso de instalación y configuración, permitiéndo
    Puedes hacerlo con el siguiente comando:
 
    ```bash
-   chmod +x instalar_suricata.sh
+   chmod +x suricataman.sh
 
 Ejecuta el script en la misma rama o directorio donde se descargó el archivo:
    ```bash
-  ./instalar_suricata.sh
+  ./suricataman.sh
