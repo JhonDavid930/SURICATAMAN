@@ -2,6 +2,12 @@
 
 **Instalación Automática de Suricata**
 
+**VIDEO TUTORIAL**
+https://www.youtube.com/watch?v=mWlxgF9nbmk&t=0s
+
+[![Video Tutorial](https://img.youtube.com/vi/mWlxgF9nbmk/maxresdefault.jpg)](https://www.youtube.com/watch?v=mWlxgF9nbmk&t=0s)
+
+
 Este script en Bash ha sido diseñado para **instalar y configurar** de forma rápida y eficaz **Suricata**, una poderosa herramienta de monitorización y detección de intrusiones en redes.
 
 ---
@@ -32,8 +38,8 @@ Este script simplifica el proceso de instalación y configuración, permitiéndo
    Puedes hacerlo con el siguiente comando:
 
    ```bash
-   chmod +x instalar_suricata.sh
+   chmod +x suricataman.sh
 
 Ejecuta el script en la misma rama o directorio donde se descargó el archivo:
    ```bash
-  ./instalar_suricata.sh
+  ./suricataman.sh
