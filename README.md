@@ -1,45 +1,63 @@
-# **Suricata-instalación**
+# SURICATAMAN
 
-**Instalación Automática de Suricata**
-
-**VIDEO TUTORIAL**
-https://www.youtube.com/watch?v=mWlxgF9nbmk&t=0s
+SURICATAMAN es una herramienta Bash para instalar, configurar, actualizar y desinstalar Suricata de forma guiada en distribuciones Linux compatibles.
 
 [![Video Tutorial](https://img.youtube.com/vi/mWlxgF9nbmk/maxresdefault.jpg)](https://www.youtube.com/watch?v=mWlxgF9nbmk&t=0s)
 
+Video tutorial: [Instalacion automatica de Suricata](https://www.youtube.com/watch?v=mWlxgF9nbmk&t=0s)
 
-Este script en Bash ha sido diseñado para **instalar y configurar** de forma rápida y eficaz **Suricata**, una poderosa herramienta de monitorización y detección de intrusiones en redes.
+## Para que sirve
 
----
+Este proyecto simplifica tareas comunes de administracion de Suricata:
 
-## **Características**:
+- Instalacion automatica de Suricata.
+- Deteccion de la interfaz de red predeterminada.
+- Configuracion basica de `suricata.yaml`.
+- Descarga y actualizacion de reglas.
+- Reinicio del servicio para aplicar cambios.
+- Actualizacion y desinstalacion desde menu interactivo.
 
-### **1. Instalación de Suricata:**
-- Automáticamente añade el repositorio de Suricata estable y realiza la instalación en el sistema.
+## Estructura del Proyecto
 
-### **2. Configuración Automática:**
-- Detecta la interfaz de red predeterminada y la configura en el archivo `suricata.yaml` de forma automática.
+```text
+SURICATAMAN
+├── suricataman.sh
+├── src/
+│   └── suricataman.sh
+├── tests/
+│   └── static-check.sh
+├── Docs/
+│   ├── ANALISIS_PROYECTO.md
+│   ├── TECH_SPECS.md
+│   ├── DEPLOY_GUIDE.md
+│   ├── CHANGELOG.md
+│   └── TODO.md
+└── Recursos/
+    └── IMG/
+        └── Instala_SuricataDeformaRapida.jpeg
+```
 
-### **3. Descarga y Actualización de Reglas:**
-- Descarga y actualiza las reglas de Suricata para asegurar la detección de las últimas amenazas.
+## Uso Rapido
 
-### **4. Reinicio del Servicio:**
-- Reinicia Suricata para aplicar todas las configuraciones y actualizaciones realizadas.
+```bash
+chmod +x suricataman.sh src/suricataman.sh
+sudo ./suricataman.sh
+```
 
----
+## Validacion para Desarrollo
 
-Este script simplifica el proceso de instalación y configuración, permitiéndote tener **Suricata** en funcionamiento en cuestión de minutos, sin necesidad de intervención manual. Ideal para entornos de pruebas y despliegues rápidos en producción.
+```bash
+bash tests/static-check.sh
+```
 
----
+## Documentacion
 
-## **Instrucciones de Uso**:
+- [Analisis del proyecto](Docs/ANALISIS_PROYECTO.md)
+- [Especificacion tecnica](Docs/TECH_SPECS.md)
+- [Guia de instalacion y uso](Docs/DEPLOY_GUIDE.md)
+- [Changelog](Docs/CHANGELOG.md)
+- [Roadmap tecnico](Docs/TODO.md)
 
-1. **Asegúrate de otorgar permisos de ejecución al script antes de ejecutarlo.**  
-   Puedes hacerlo con el siguiente comando:
+## Aviso
 
-   ```bash
-   chmod +x suricataman.sh
-
-Ejecuta el script en la misma rama o directorio donde se descargó el archivo:
-   ```bash
-  ./suricataman.sh
+Este script ejecuta operaciones reales sobre el sistema: instala paquetes, edita configuracion y reinicia servicios. Se recomienda probar primero en una maquina virtual o entorno controlado.
