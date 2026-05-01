@@ -1,0 +1,19 @@
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Logs y salidas temporales
+*.log
+tmp/
+temp/
+
+# Artefactos de pruebas locales
+coverage/
+test-results/
+
+# Entornos locales
+.env
+.env.*
+!.env.example
