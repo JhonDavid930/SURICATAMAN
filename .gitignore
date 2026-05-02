@@ -17,3 +17,6 @@ test-results/
 .env
 .env.*
 !.env.example
+
+# Claves temporales locales de pruebas SSH
+.codex-ssh/

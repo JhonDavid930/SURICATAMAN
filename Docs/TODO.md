@@ -1,21 +1,22 @@
 # Roadmap Tecnico
 
-## Prioridad Alta
+## Completado
 
 - Agregar modo `--help`.
-- Agregar comandos no interactivos: `install`, `uninstall`, `update`, `configure`.
+- Agregar comandos no interactivos: `--install`, `--uninstall`, `--update`, `--configure`, `--update-rules`, `--restart`, `--advanced-config`, `--show-paths`.
 - Crear backups antes de modificar `/etc/suricata/suricata.yaml`.
 - Agregar modo `--dry-run`.
-
-## Prioridad Media
-
-- Mejorar deteccion de interfaz de red con validaciones adicionales.
 - Evitar reinstalar dependencias que ya existen.
+- Mejorar deteccion y validacion de interfaz de red.
+- Validar configuracion con `suricata -T` antes de reiniciar.
+- Configurar logrotate para logs de SURICATAMAN.
+- Agregar workflow de GitHub Actions para validacion estatica.
+
+## Pendiente
+
+- Agregar pruebas en contenedores para Ubuntu, Debian, Fedora, Arch y derivados RHEL.
+- Crear futuras integraciones graficas.
 - Separar mensajes de UI de la logica de instalacion.
-- Agregar pruebas en contenedores para Ubuntu, Debian, Fedora y Arch.
-
-## Prioridad Baja
-
 - Publicar capturas nuevas en `Recursos/IMG/`.
-- Crear ejemplos de ejecucion en `Docs/`.
+- Crear ejemplos de ejecucion ampliados en `Docs/`.
 - Agregar plantillas para issues y pull requests.
