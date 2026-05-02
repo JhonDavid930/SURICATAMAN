@@ -5,6 +5,8 @@ Todas las modificaciones relevantes del proyecto se documentan aqui.
 ## v2.1.0 - Hardening, automatizacion y UX
 
 - Agregado control de reinstalacion cuando Suricata ya existe.
+- Agregada fuente de version `VERSION`.
+- Agregado flag `--version`.
 - Evitada la reinstalacion innecesaria de `bc`, `curl`, `gnupg` y `jq`.
 - Agregada cache de paquetes por ejecucion con `update_package_cache`.
 - Agregados backups versionados de `/etc/suricata/suricata.yaml`.

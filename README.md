@@ -1,5 +1,7 @@
 # SURICATAMAN
 
+Version actual: `2.1.0`
+
 SURICATAMAN es una herramienta Bash para instalar, configurar, actualizar, endurecer y administrar Suricata de forma guiada o automatizada en distribuciones Linux compatibles.
 
 [![Video Tutorial](https://img.youtube.com/vi/mWlxgF9nbmk/maxresdefault.jpg)](https://www.youtube.com/watch?v=mWlxgF9nbmk&t=0s)
@@ -65,6 +67,7 @@ Menu disponible:
 
 ```bash
 sudo ./suricataman.sh --help
+sudo ./suricataman.sh --version
 sudo ./suricataman.sh --install
 sudo ./suricataman.sh --uninstall
 sudo ./suricataman.sh --update
@@ -100,6 +103,12 @@ bash tests/static-check.sh
 ```
 
 El workflow de GitHub Actions ejecuta la misma validacion en cada `push` y `pull_request`.
+
+## Versionado
+
+- Version actual: `2.1.0`.
+- Fuente de version del repositorio: `VERSION`.
+- Historial de cambios: [Docs/CHANGELOG.md](Docs/CHANGELOG.md).
 
 ## Documentacion
 

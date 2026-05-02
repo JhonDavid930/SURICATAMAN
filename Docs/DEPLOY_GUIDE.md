@@ -32,6 +32,7 @@ sudo ./suricataman.sh
 
 ```bash
 sudo ./suricataman.sh --install
+sudo ./suricataman.sh --version
 sudo ./suricataman.sh --update
 sudo ./suricataman.sh --update-rules
 sudo ./suricataman.sh --restart

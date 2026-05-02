@@ -11,6 +11,7 @@ PURPLE='\033[0;35m'
 NC='\033[0m'
 
 # Variables globales
+PROJECT_VERSION="2.1.0"
 LOG_DIR="/var/log/suricataman"
 LOG_FILE="$LOG_DIR/suricataman.log"
 LOGROTATE_FILE="/etc/logrotate.d/suricataman"
@@ -659,14 +660,15 @@ run_install_flow() {
 }
 
 show_help() {
-    cat <<'EOF'
-SURICATAMAN - Gestión de Suricata
+    cat <<EOF
+SURICATAMAN $PROJECT_VERSION - Gestión de Suricata
 
 Uso:
   sudo ./suricataman.sh [opciones]
 
 Opciones:
   --help             Muestra esta ayuda.
+  --version          Muestra la versión actual.
   --install          Instala, configura, actualiza reglas y reinicia Suricata.
   --uninstall        Desinstala Suricata.
   --update           Actualiza Suricata.
@@ -684,6 +686,10 @@ Ejemplos:
 EOF
 }
 
+show_version() {
+    echo "SURICATAMAN $PROJECT_VERSION"
+}
+
 parse_arguments() {
     local arg
 
@@ -694,6 +700,9 @@ parse_arguments() {
                 ;;
             --help)
                 ACTION="help"
+                ;;
+            --version)
+                ACTION="version"
                 ;;
             --install)
                 ACTION="install"
@@ -797,6 +806,11 @@ main() {
     parse_arguments "$@"
     if [ "$ACTION" = "help" ]; then
         show_help
+        exit 0
+    fi
+
+    if [ "$ACTION" = "version" ]; then
+        show_version
         exit 0
     fi
 

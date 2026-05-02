@@ -4,6 +4,8 @@
 
 Herramienta CLI interactiva y no interactiva escrita en Bash para administracion local de Suricata.
 
+Version actual del proyecto: `2.1.0`.
+
 ## Arquitectura
 
 ```text
@@ -41,6 +43,7 @@ SURICATAMAN
 - `advanced_config_menu`: permite habilitar o deshabilitar `af-packet`.
 - `manage_paths`: muestra rutas, permisos, contenido y estado de archivos clave.
 - `parse_arguments`: habilita modo no interactivo.
+- `show_version`: imprime la version actual del proyecto.
 - `show_menu`: experiencia interactiva principal.
 
 ## Modo No Interactivo
@@ -48,6 +51,7 @@ SURICATAMAN
 Opciones disponibles:
 
 - `--help`
+- `--version`
 - `--install`
 - `--uninstall`
 - `--update`
@@ -119,3 +123,4 @@ Mantener siempre:
 - `src/suricataman.sh` como logica principal.
 - `tests/static-check.sh` como verificacion minima.
 - `Docs/` como fuente de documentacion.
+- `VERSION` como fuente simple de versionado del repositorio.
