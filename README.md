@@ -1,6 +1,6 @@
 # SURICATAMAN
 
-Version actual: `2.1.0`
+Version actual: `2.2.0`
 
 SURICATAMAN es una herramienta Bash para instalar, configurar, actualizar, endurecer y administrar Suricata de forma guiada o automatizada en distribuciones Linux compatibles.
 
@@ -31,6 +31,11 @@ SURICATAMAN
 │   └── suricataman.sh
 ├── tests/
 │   └── static-check.sh
+├── install.sh
+├── scripts/
+│   └── build-standalone.sh
+├── dist/
+│   └── suricataman-standalone.sh
 ├── Docs/
 │   ├── ANALISIS_PROYECTO.md
 │   ├── TECH_SPECS.md
@@ -48,6 +53,73 @@ SURICATAMAN
 chmod +x suricataman.sh src/suricataman.sh
 sudo ./suricataman.sh
 ```
+
+## Formas de Instalacion
+
+SURICATAMAN se puede instalar o ejecutar de varias formas para que copiar una carpeta completa no sea una limitacion.
+
+Guia completa: [Docs/INSTALLATION_GUIDE.md](Docs/INSTALLATION_GUIDE.md)
+
+### 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/JhonDavid930/SURICATAMAN.git
+cd SURICATAMAN
+chmod +x suricataman.sh src/suricataman.sh
+sudo ./suricataman.sh
+```
+
+### 2. Instalador remoto con curl
+
+Instala la herramienta completa en `/opt/suricataman` y crea el comando global `suricataman`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash
+sudo suricataman
+```
+
+Para instalar una version concreta:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.2.0
+```
+
+### 3. Instalador remoto con wget
+
+```bash
+wget -qO- https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash
+sudo suricataman
+```
+
+### 4. Copia minima
+
+Si solo puedes copiar pocos archivos, bastan:
+
+```text
+suricataman.sh
+src/suricataman.sh
+```
+
+### 5. Un solo archivo standalone
+
+Si el servidor solo permite descargar o pegar un archivo, usa:
+
+```text
+dist/suricataman-standalone.sh
+```
+
+Ejecutalo con:
+
+```bash
+chmod +x suricataman-standalone.sh
+sudo ./suricataman-standalone.sh
+```
+
+### 6. Descargar ZIP o TAR.GZ desde GitHub
+
+Tambien puedes descargar el release desde GitHub, descomprimirlo y ejecutar `sudo ./suricataman.sh`.
+
+Todos estos metodos fueron probados en Kali Linux antes de publicar la version `2.2.0`.
 
 Menu disponible:
 
@@ -106,7 +178,7 @@ El workflow de GitHub Actions ejecuta la misma validacion en cada `push` y `pull
 
 ## Versionado
 
-- Version actual: `2.1.0`.
+- Version actual: `2.2.0`.
 - Fuente de version del repositorio: `VERSION`.
 - Historial de cambios: [Docs/CHANGELOG.md](Docs/CHANGELOG.md).
 
@@ -114,6 +186,7 @@ El workflow de GitHub Actions ejecuta la misma validacion en cada `push` y `pull
 
 - [Analisis del proyecto](Docs/ANALISIS_PROYECTO.md)
 - [Especificacion tecnica](Docs/TECH_SPECS.md)
+- [Guia completa de instalacion](Docs/INSTALLATION_GUIDE.md)
 - [Guia de instalacion y uso](Docs/DEPLOY_GUIDE.md)
 - [Changelog](Docs/CHANGELOG.md)
 - [Roadmap tecnico](Docs/TODO.md)

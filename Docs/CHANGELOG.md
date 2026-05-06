@@ -2,6 +2,19 @@
 
 Todas las modificaciones relevantes del proyecto se documentan aqui.
 
+## v2.2.0 - Distribucion flexible
+
+- Agregado `install.sh` para instalar la herramienta completa desde GitHub.
+- Agregado soporte de instalacion por `curl` o `wget`.
+- Agregado soporte de instalacion por rama, tag o commit con `--ref`.
+- Agregada instalacion en `/opt/suricataman` con comando global `suricataman`.
+- Agregada version standalone de un solo archivo en `dist/suricataman-standalone.sh`.
+- Agregado generador `scripts/build-standalone.sh`.
+- Actualizados tests para validar instalador, generador y standalone.
+- Documentadas formas de instalacion para servidores con restricciones de copia.
+- Agregada guia dedicada `Docs/INSTALLATION_GUIDE.md`.
+- Validada instalacion real en Kali Linux por copia completa, copia minima, standalone, instalador local, curl, wget y TAR.GZ.
+
 ## v2.1.0 - Hardening, automatizacion y UX
 
 - Agregado control de reinstalacion cuando Suricata ya existe.

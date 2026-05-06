@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Archivo standalone generado desde src/suricataman.sh.
+# No editar manualmente: ejecuta scripts/build-standalone.sh.
 
 set -euo pipefail
 

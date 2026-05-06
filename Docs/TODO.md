@@ -11,6 +11,10 @@
 - Validar configuracion con `suricata -T` antes de reiniciar.
 - Configurar logrotate para logs de SURICATAMAN.
 - Agregar workflow de GitHub Actions para validacion estatica.
+- Agregar instalador remoto `install.sh`.
+- Agregar version standalone de un solo archivo.
+- Documentar instalacion con Git, curl, wget, ZIP/TAR.GZ, copia minima y standalone.
+- Validar todos los metodos de instalacion en Kali Linux antes de publicar.
 
 ## Pendiente
 
