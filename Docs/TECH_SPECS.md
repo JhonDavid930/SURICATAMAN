@@ -4,7 +4,7 @@
 
 Herramienta CLI interactiva y no interactiva escrita en Bash para administracion local de Suricata.
 
-Version actual del proyecto: `2.2.0`.
+Version actual del proyecto: `2.3.0`.
 
 ## Arquitectura
 
@@ -52,6 +52,8 @@ SURICATAMAN
 - `update_rules`: ejecuta `suricata-update`.
 - `advanced_config_menu`: permite habilitar o deshabilitar `af-packet`.
 - `manage_paths`: muestra rutas, permisos, contenido y estado de archivos clave.
+- `run_doctor`: ejecuta diagnostico operativo de Suricata y SURICATAMAN.
+- `generate_report`: crea reporte versionado en `/var/log/suricataman/reports`.
 - `parse_arguments`: habilita modo no interactivo.
 - `show_version`: imprime la version actual del proyecto.
 - `show_menu`: experiencia interactiva principal.
@@ -117,9 +119,36 @@ Opciones disponibles:
 - `--restart`
 - `--advanced-config`
 - `--show-paths`
+- `--doctor`
+- `--report`
 - `--dry-run`
 
 `--install` ejecuta dependencias, logrotate, instalacion, configuracion, reglas y reinicio. Si `install_suricata` retorna error o cancelacion, no se ejecutan pasos posteriores.
+
+## Diagnostico Operativo
+
+`--doctor` valida el estado real de la instalacion sin modificar configuracion:
+
+- presencia del binario `suricata`;
+- version instalada;
+- estado `active` de `suricata.service`;
+- habilitacion al arranque;
+- existencia de `/etc/suricata/suricata.yaml`;
+- interfaz configurada y existencia en el sistema;
+- validacion con `suricata -T`;
+- existencia de rutas de reglas, logs y logrotate.
+
+El diagnostico retorna error si detecta fallos criticos. Las advertencias se muestran en pantalla y quedan registradas en el log.
+
+## Reporte Operativo
+
+`--report` crea un informe de diagnostico con timestamp en:
+
+```text
+/var/log/suricataman/reports/suricataman-report-YYYYMMDD_HHMMSS.txt
+```
+
+El reporte incluye version, fecha, resultado de `--doctor` y rutas clave para auditoria o soporte.
 
 ## Dry Run
 

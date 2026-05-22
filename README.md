@@ -1,6 +1,6 @@
 # SURICATAMAN
 
-Version actual: `2.2.0`
+Version actual: `2.3.0`
 
 SURICATAMAN es una herramienta Bash para instalar, configurar, actualizar, endurecer y administrar Suricata de forma guiada o automatizada en distribuciones Linux compatibles.
 
@@ -20,6 +20,8 @@ Video tutorial: [Instalacion automatica de Suricata](https://www.youtube.com/wat
 - Habilitacion de `suricata.service` al arranque.
 - Configuracion de logrotate para los logs de SURICATAMAN.
 - Menu de rutas importantes y configuracion avanzada.
+- Diagnostico operativo con `--doctor`.
+- Reporte operativo versionado con `--report`.
 - Modo no interactivo y modo `--dry-run`.
 
 ## Estructura del Proyecto
@@ -81,7 +83,7 @@ sudo suricataman
 Para instalar una version concreta:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.2.0
+curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.3.0
 ```
 
 ### 3. Instalador remoto con wget
@@ -132,7 +134,9 @@ Menu disponible:
 6) Reiniciar Suricata
 7) Configuracion avanzada de Suricata
 8) Ver rutas y archivos importantes
-9) Salir
+9) Diagnostico operativo
+10) Generar reporte operativo
+11) Salir
 ```
 
 ## Uso No Interactivo
@@ -148,6 +152,8 @@ sudo ./suricataman.sh --update-rules
 sudo ./suricataman.sh --restart
 sudo ./suricataman.sh --advanced-config
 sudo ./suricataman.sh --show-paths
+sudo ./suricataman.sh --doctor
+sudo ./suricataman.sh --report
 ```
 
 Ejemplos:
@@ -155,7 +161,32 @@ Ejemplos:
 ```bash
 sudo ./suricataman.sh --install
 sudo ./suricataman.sh --update-rules
+sudo ./suricataman.sh --doctor
+sudo ./suricataman.sh --report
 sudo ./suricataman.sh --dry-run --install
+```
+
+## Diagnostico y Reportes
+
+`--doctor` revisa el estado operativo de Suricata y SURICATAMAN:
+
+- binario y version de Suricata;
+- estado y habilitacion de `suricata.service`;
+- existencia de `suricata.yaml`;
+- interfaz configurada;
+- validacion con `suricata -T`;
+- rutas de reglas, logs y logrotate.
+
+`--report` genera un informe en:
+
+```text
+/var/log/suricataman/reports/
+```
+
+Ejemplo:
+
+```bash
+sudo ./suricataman.sh --report
 ```
 
 ## Rutas Importantes
@@ -178,7 +209,7 @@ El workflow de GitHub Actions ejecuta la misma validacion en cada `push` y `pull
 
 ## Versionado
 
-- Version actual: `2.2.0`.
+- Version actual: `2.3.0`.
 - Fuente de version del repositorio: `VERSION`.
 - Historial de cambios: [Docs/CHANGELOG.md](Docs/CHANGELOG.md).
 

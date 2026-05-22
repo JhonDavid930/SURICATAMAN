@@ -2,6 +2,15 @@
 
 Todas las modificaciones relevantes del proyecto se documentan aqui.
 
+## v2.3.0 - Diagnostico y reportes operativos
+
+- Agregado modo `--doctor` para validar estado de Suricata y SURICATAMAN.
+- Agregada verificacion de binario, version, servicio, arranque, YAML, interfaz, reglas, logs y logrotate.
+- Agregado modo `--report` para generar reportes versionados en `/var/log/suricataman/reports`.
+- Ampliado menu interactivo con diagnostico operativo y generacion de reporte.
+- Actualizada documentacion tecnica y de uso para las nuevas opciones.
+- Regenerado artefacto standalone con las nuevas funciones.
+
 ## v2.2.0 - Distribucion flexible
 
 - Agregado `install.sh` para instalar la herramienta completa desde GitHub.

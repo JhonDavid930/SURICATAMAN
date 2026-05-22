@@ -13,6 +13,14 @@ bash -n "$ROOT_DIR/dist/suricataman-standalone.sh"
 bash "$ROOT_DIR/suricataman.sh" --help >/dev/null
 bash "$ROOT_DIR/suricataman.sh" --dry-run --help >/dev/null
 bash "$ROOT_DIR/suricataman.sh" --version >/dev/null
+if ! bash "$ROOT_DIR/suricataman.sh" --help | grep -q -- "--doctor"; then
+  echo "No se encontro --doctor en la ayuda."
+  exit 1
+fi
+if ! bash "$ROOT_DIR/suricataman.sh" --help | grep -q -- "--report"; then
+  echo "No se encontro --report en la ayuda."
+  exit 1
+fi
 bash "$ROOT_DIR/install.sh" --help >/dev/null
 bash "$ROOT_DIR/dist/suricataman-standalone.sh" --version >/dev/null
 

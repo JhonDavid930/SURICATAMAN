@@ -15,10 +15,13 @@
 - Agregar version standalone de un solo archivo.
 - Documentar instalacion con Git, curl, wget, ZIP/TAR.GZ, copia minima y standalone.
 - Validar todos los metodos de instalacion en Kali Linux antes de publicar.
+- Agregar diagnostico operativo con `--doctor`.
+- Agregar reporte operativo versionado con `--report`.
 
 ## Pendiente
 
 - Agregar pruebas en contenedores para Ubuntu, Debian, Fedora, Arch y derivados RHEL.
+- Ampliar `--report` con salida JSON opcional.
 - Crear futuras integraciones graficas.
 - Separar mensajes de UI de la logica de instalacion.
 - Publicar capturas nuevas en `Recursos/IMG/`.
