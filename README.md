@@ -1,6 +1,6 @@
 # SURICATAMAN
 
-Version actual: `2.3.0`
+Version actual: `2.4.0`
 
 SURICATAMAN es una herramienta Bash para instalar, configurar, actualizar, endurecer y administrar Suricata de forma guiada o automatizada en distribuciones Linux compatibles.
 
@@ -20,8 +20,12 @@ Video tutorial: [Instalacion automatica de Suricata](https://www.youtube.com/wat
 - Habilitacion de `suricata.service` al arranque.
 - Configuracion de logrotate para los logs de SURICATAMAN.
 - Menu de rutas importantes y configuracion avanzada.
+- Estado rapido con `--status`.
 - Diagnostico operativo con `--doctor`.
 - Reporte operativo versionado con `--report`.
+- Reporte JSON con `--report-json`.
+- Visualizacion de eventos con `--events`.
+- Actualizacion completa con `--upgrade-all`.
 - Modo no interactivo y modo `--dry-run`.
 
 ## Estructura del Proyecto
@@ -42,6 +46,7 @@ SURICATAMAN
 │   ├── ANALISIS_PROYECTO.md
 │   ├── TECH_SPECS.md
 │   ├── DEPLOY_GUIDE.md
+│   ├── RELEASE_GUIDE.md
 │   ├── CHANGELOG.md
 │   └── TODO.md
 └── Recursos/
@@ -83,7 +88,7 @@ sudo suricataman
 Para instalar una version concreta:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.3.0
+curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.4.0
 ```
 
 ### 3. Instalador remoto con wget
@@ -134,9 +139,13 @@ Menu disponible:
 6) Reiniciar Suricata
 7) Configuracion avanzada de Suricata
 8) Ver rutas y archivos importantes
-9) Diagnostico operativo
-10) Generar reporte operativo
-11) Salir
+9) Estado rapido
+10) Diagnostico operativo
+11) Generar reporte operativo
+12) Generar reporte JSON
+13) Ver eventos de Suricata
+14) Actualizacion completa
+15) Salir
 ```
 
 ## Uso No Interactivo
@@ -152,8 +161,12 @@ sudo ./suricataman.sh --update-rules
 sudo ./suricataman.sh --restart
 sudo ./suricataman.sh --advanced-config
 sudo ./suricataman.sh --show-paths
+sudo ./suricataman.sh --status
 sudo ./suricataman.sh --doctor
 sudo ./suricataman.sh --report
+sudo ./suricataman.sh --report-json
+sudo ./suricataman.sh --events
+sudo ./suricataman.sh --upgrade-all
 ```
 
 Ejemplos:
@@ -161,12 +174,25 @@ Ejemplos:
 ```bash
 sudo ./suricataman.sh --install
 sudo ./suricataman.sh --update-rules
+sudo ./suricataman.sh --status
 sudo ./suricataman.sh --doctor
 sudo ./suricataman.sh --report
+sudo ./suricataman.sh --report-json
+sudo ./suricataman.sh --events
+sudo ./suricataman.sh --upgrade-all
 sudo ./suricataman.sh --dry-run --install
 ```
 
 ## Diagnostico y Reportes
+
+`--status` muestra un resumen rapido para operacion diaria:
+
+- Suricata instalado;
+- version;
+- estado del servicio;
+- configuracion valida o no disponible;
+- interfaz configurada;
+- ultima actualizacion de reglas.
 
 `--doctor` revisa el estado operativo de Suricata y SURICATAMAN:
 
@@ -176,18 +202,34 @@ sudo ./suricataman.sh --dry-run --install
 - interfaz configurada;
 - validacion con `suricata -T`;
 - rutas de reglas, logs y logrotate.
+- recomendaciones de correccion cuando detecta fallos o advertencias.
 
-`--report` genera un informe en:
+`--report` genera un informe de texto en:
 
 ```text
 /var/log/suricataman/reports/
 ```
 
+`--report-json` genera un informe JSON en la misma ruta para automatizacion, SIEM, SOC, scripts o dashboards.
+
 Ejemplo:
 
 ```bash
 sudo ./suricataman.sh --report
+sudo ./suricataman.sh --report-json
 ```
+
+## Eventos y Actualizacion Completa
+
+`--events` muestra las ultimas lineas de `fast.log` y `eve.json`. Si `jq` esta instalado, resume `eve.json` con campos utiles como fecha, tipo de evento, origen, destino y firma.
+
+`--upgrade-all` ejecuta un flujo completo:
+
+- actualiza Suricata;
+- actualiza reglas;
+- valida configuracion;
+- reinicia el servicio;
+- ejecuta diagnostico operativo.
 
 ## Rutas Importantes
 
@@ -209,7 +251,7 @@ El workflow de GitHub Actions ejecuta la misma validacion en cada `push` y `pull
 
 ## Versionado
 
-- Version actual: `2.3.0`.
+- Version actual: `2.4.0`.
 - Fuente de version del repositorio: `VERSION`.
 - Historial de cambios: [Docs/CHANGELOG.md](Docs/CHANGELOG.md).
 
@@ -219,6 +261,7 @@ El workflow de GitHub Actions ejecuta la misma validacion en cada `push` y `pull
 - [Especificacion tecnica](Docs/TECH_SPECS.md)
 - [Guia completa de instalacion](Docs/INSTALLATION_GUIDE.md)
 - [Guia de instalacion y uso](Docs/DEPLOY_GUIDE.md)
+- [Guia de publicacion de releases](Docs/RELEASE_GUIDE.md)
 - [Changelog](Docs/CHANGELOG.md)
 - [Roadmap tecnico](Docs/TODO.md)
 

@@ -11,12 +11,14 @@ PURPLE='\033[0;35m'
 NC='\033[0m'
 
 # Variables globales
-PROJECT_VERSION="2.3.0"
+PROJECT_VERSION="2.4.0"
 LOG_DIR="/var/log/suricataman"
 LOG_FILE="$LOG_DIR/suricataman.log"
 LOGROTATE_FILE="/etc/logrotate.d/suricataman"
 SURICATA_CONFIG="/etc/suricata/suricata.yaml"
 REPORT_DIR="$LOG_DIR/reports"
+SURICATA_FAST_LOG="/var/log/suricata/fast.log"
+SURICATA_EVE_LOG="/var/log/suricata/eve.json"
 PACKAGE_CACHE_UPDATED=false
 DRY_RUN=false
 SURICATAMAN_LOGS_REMOVED=false
@@ -24,6 +26,7 @@ ACTION="menu"
 DOCTOR_WARNINGS=0
 DOCTOR_FAILURES=0
 LOG_STDOUT=true
+EVENT_LINES=20
 
 log() {
     local message="$1"
@@ -656,6 +659,7 @@ doctor_line() {
     local status="$1"
     local label="$2"
     local detail="${3:-}"
+    local recommendation="${4:-}"
 
     case "$status" in
         OK)
@@ -664,10 +668,16 @@ doctor_line() {
         WARN)
             DOCTOR_WARNINGS=$((DOCTOR_WARNINGS + 1))
             echo -e "${YELLOW}[WARN]${NC} $label${detail:+ - $detail}"
+            if [ -n "$recommendation" ]; then
+                echo "      Recomendacion: $recommendation"
+            fi
             ;;
         FAIL)
             DOCTOR_FAILURES=$((DOCTOR_FAILURES + 1))
             echo -e "${RED}[FAIL]${NC} $label${detail:+ - $detail}"
+            if [ -n "$recommendation" ]; then
+                echo "      Recomendacion: $recommendation"
+            fi
             ;;
         INFO)
             echo -e "${BLUE}[INFO]${NC} $label${detail:+ - $detail}"
@@ -679,6 +689,54 @@ get_configured_interface() {
     if [ -f "$SURICATA_CONFIG" ]; then
         awk '/^[[:space:]]*-[[:space:]]*interface:/ {print $3; exit}' "$SURICATA_CONFIG" 2>/dev/null
     fi
+}
+
+get_suricata_version() {
+    if is_suricata_installed; then
+        suricata -V 2>&1 | head -n 1
+    else
+        printf '%s\n' "No instalado"
+    fi
+}
+
+get_service_state() {
+    local query="$1"
+
+    if command -v systemctl >/dev/null 2>&1; then
+        systemctl "$query" suricata.service 2>/dev/null || true
+    else
+        printf '%s\n' "systemctl-no-disponible"
+    fi
+}
+
+check_suricata_config_quiet() {
+    if [ "$DRY_RUN" = true ]; then
+        return 0
+    fi
+
+    is_suricata_installed || return 1
+    [ -f "$SURICATA_CONFIG" ] || return 1
+    sudo suricata -T -c "$SURICATA_CONFIG" >/dev/null 2>&1
+}
+
+get_rules_update_time() {
+    local rules_file="/var/lib/suricata/rules/suricata.rules"
+
+    if [ -f "$rules_file" ]; then
+        stat -c '%y' "$rules_file" 2>/dev/null | cut -d'.' -f1
+    else
+        printf '%s\n' "No disponible"
+    fi
+}
+
+json_escape() {
+    local value="$1"
+
+    value="${value//\\/\\\\}"
+    value="${value//\"/\\\"}"
+    value="${value//$'\n'/\\n}"
+    value="${value//$'\r'/}"
+    printf '%s' "$value"
 }
 
 run_doctor() {
@@ -697,26 +755,26 @@ run_doctor() {
     echo ""
 
     if is_suricata_installed; then
-        suricata_version="$(suricata -V 2>&1 | head -n 1)"
+        suricata_version="$(get_suricata_version)"
         doctor_line "OK" "Binario de Suricata encontrado" "$suricata_version"
     else
-        doctor_line "FAIL" "Binario de Suricata no encontrado" "ejecuta --install para instalarlo"
+        doctor_line "FAIL" "Binario de Suricata no encontrado" "no instalado" "Ejecuta sudo suricataman --install."
     fi
 
     if command -v systemctl >/dev/null 2>&1; then
-        service_active="$(systemctl is-active suricata.service 2>/dev/null || true)"
-        service_enabled="$(systemctl is-enabled suricata.service 2>/dev/null || true)"
+        service_active="$(get_service_state is-active)"
+        service_enabled="$(get_service_state is-enabled)"
 
         if [ "$service_active" = "active" ]; then
             doctor_line "OK" "Servicio suricata.service activo" "$service_active"
         else
-            doctor_line "WARN" "Servicio suricata.service no activo" "$service_active"
+            doctor_line "WARN" "Servicio suricata.service no activo" "$service_active" "Ejecuta sudo suricataman --restart despues de validar la configuracion."
         fi
 
         if [ "$service_enabled" = "enabled" ]; then
             doctor_line "OK" "Servicio habilitado al arranque" "$service_enabled"
         else
-            doctor_line "WARN" "Servicio no habilitado al arranque" "$service_enabled"
+            doctor_line "WARN" "Servicio no habilitado al arranque" "$service_enabled" "Ejecuta sudo systemctl enable suricata.service."
         fi
     else
         doctor_line "WARN" "systemctl no esta disponible" "no se puede consultar estado del servicio"
@@ -725,7 +783,7 @@ run_doctor() {
     if [ -f "$SURICATA_CONFIG" ]; then
         doctor_line "OK" "Configuracion principal encontrada" "$SURICATA_CONFIG"
     else
-        doctor_line "FAIL" "Configuracion principal no encontrada" "$SURICATA_CONFIG"
+        doctor_line "FAIL" "Configuracion principal no encontrada" "$SURICATA_CONFIG" "Ejecuta sudo suricataman --install o reinstala el paquete de Suricata."
     fi
 
     configured_interface="$(get_configured_interface)"
@@ -733,40 +791,40 @@ run_doctor() {
         if ip link show "$configured_interface" >/dev/null 2>&1; then
             doctor_line "OK" "Interfaz configurada existe" "$configured_interface"
         else
-            doctor_line "FAIL" "Interfaz configurada no existe" "$configured_interface"
+            doctor_line "FAIL" "Interfaz configurada no existe" "$configured_interface" "Ejecuta sudo suricataman --configure y selecciona una interfaz valida."
         fi
     else
-        doctor_line "WARN" "No se pudo detectar la interfaz configurada" "$SURICATA_CONFIG"
+        doctor_line "WARN" "No se pudo detectar la interfaz configurada" "$SURICATA_CONFIG" "Revisa af-packet en suricata.yaml o ejecuta sudo suricataman --configure."
     fi
 
     if is_suricata_installed && [ -f "$SURICATA_CONFIG" ]; then
         if [ "$DRY_RUN" = true ]; then
             doctor_line "INFO" "Validacion de configuracion omitida en dry-run" "sudo suricata -T -c $SURICATA_CONFIG"
-        elif sudo suricata -T -c "$SURICATA_CONFIG" >/dev/null 2>&1; then
+        elif check_suricata_config_quiet; then
             doctor_line "OK" "Configuracion validada con suricata -T" "$SURICATA_CONFIG"
         else
-            doctor_line "FAIL" "Configuracion invalida segun suricata -T" "$SURICATA_CONFIG"
+            doctor_line "FAIL" "Configuracion invalida segun suricata -T" "$SURICATA_CONFIG" "Restaura el ultimo backup o corrige el YAML antes de reiniciar."
         fi
     else
-        doctor_line "WARN" "Validacion de configuracion no ejecutada" "faltan Suricata o $SURICATA_CONFIG"
+        doctor_line "WARN" "Validacion de configuracion no ejecutada" "faltan Suricata o $SURICATA_CONFIG" "Completa la instalacion antes de validar."
     fi
 
     if [ -d "$rules_path" ]; then
-        doctor_line "OK" "Directorio de reglas encontrado" "$rules_path"
+        doctor_line "OK" "Directorio de reglas encontrado" "$rules_path, ultima actualizacion: $(get_rules_update_time)"
     else
-        doctor_line "WARN" "Directorio de reglas no encontrado" "$rules_path"
+        doctor_line "WARN" "Directorio de reglas no encontrado" "$rules_path" "Ejecuta sudo suricataman --update-rules."
     fi
 
     if [ -f "$LOG_FILE" ]; then
         doctor_line "OK" "Log de SURICATAMAN disponible" "$LOG_FILE"
     else
-        doctor_line "WARN" "Log de SURICATAMAN no encontrado" "$LOG_FILE"
+        doctor_line "WARN" "Log de SURICATAMAN no encontrado" "$LOG_FILE" "Ejecuta cualquier accion de SURICATAMAN para crearlo."
     fi
 
     if [ -f "$LOGROTATE_FILE" ]; then
         doctor_line "OK" "Logrotate configurado" "$LOGROTATE_FILE"
     else
-        doctor_line "WARN" "Logrotate no configurado" "$LOGROTATE_FILE"
+        doctor_line "WARN" "Logrotate no configurado" "$LOGROTATE_FILE" "Ejecuta sudo suricataman --install o recrea rutas desde --show-paths."
     fi
 
     echo ""
@@ -849,6 +907,148 @@ generate_report() {
     return "$doctor_status"
 }
 
+show_status() {
+    local installed="no"
+    local version
+    local active
+    local enabled
+    local configured_interface
+    local config_status="no validada"
+    local rules_time
+
+    if is_suricata_installed; then
+        installed="si"
+    fi
+
+    version="$(get_suricata_version)"
+    active="$(get_service_state is-active)"
+    enabled="$(get_service_state is-enabled)"
+    configured_interface="$(get_configured_interface)"
+    rules_time="$(get_rules_update_time)"
+
+    if check_suricata_config_quiet; then
+        if [ "$DRY_RUN" = true ]; then
+            config_status="simulada en dry-run"
+        else
+            config_status="valida"
+        fi
+    else
+        config_status="invalida o no disponible"
+    fi
+
+    echo -e "${BLUE}Estado rapido de SURICATAMAN${NC}"
+    echo "Suricata instalado: $installed"
+    echo "Version: $version"
+    echo "Servicio activo: $active"
+    echo "Servicio al arranque: $enabled"
+    echo "Configuracion: $config_status"
+    echo "Interfaz configurada: ${configured_interface:-No detectada}"
+    echo "Ultima actualizacion de reglas: $rules_time"
+    echo "Log SURICATAMAN: $LOG_FILE"
+}
+
+generate_json_report() {
+    local timestamp
+    local report_file
+    local installed=false
+    local version
+    local active
+    local enabled
+    local configured_interface
+    local config_valid=false
+    local rules_time
+
+    timestamp="$(date '+%Y%m%d_%H%M%S')"
+    report_file="$REPORT_DIR/suricataman-report-$timestamp.json"
+
+    if is_suricata_installed; then
+        installed=true
+    fi
+
+    version="$(get_suricata_version)"
+    active="$(get_service_state is-active)"
+    enabled="$(get_service_state is-enabled)"
+    configured_interface="$(get_configured_interface)"
+    rules_time="$(get_rules_update_time)"
+
+    if check_suricata_config_quiet; then
+        config_valid=true
+    fi
+
+    if [ "$DRY_RUN" = true ]; then
+        log "${YELLOW}[DRY-RUN] Crear reporte JSON en $report_file${NC}"
+        return 0
+    fi
+
+    sudo mkdir -p "$REPORT_DIR" || { log "${RED}No se pudo crear $REPORT_DIR.${NC}"; return 1; }
+    {
+        printf '{\n'
+        printf '  "project": "SURICATAMAN",\n'
+        printf '  "version": "%s",\n' "$(json_escape "$PROJECT_VERSION")"
+        printf '  "generated_at": "%s",\n' "$(date '+%Y-%m-%d %H:%M:%S')"
+        printf '  "system": {\n'
+        printf '    "name": "%s",\n' "$(json_escape "${OS_NAME:-Desconocido}")"
+        printf '    "version": "%s",\n' "$(json_escape "${OS_VERSION:-Desconocida}")"
+        printf '    "id": "%s"\n' "$(json_escape "${ID:-sin-id}")"
+        printf '  },\n'
+        printf '  "suricata": {\n'
+        printf '    "installed": %s,\n' "$installed"
+        printf '    "version": "%s",\n' "$(json_escape "$version")"
+        printf '    "service_active": "%s",\n' "$(json_escape "$active")"
+        printf '    "service_enabled": "%s",\n' "$(json_escape "$enabled")"
+        printf '    "config_file": "%s",\n' "$(json_escape "$SURICATA_CONFIG")"
+        printf '    "config_valid": %s,\n' "$config_valid"
+        printf '    "configured_interface": "%s",\n' "$(json_escape "${configured_interface:-}")"
+        printf '    "rules_last_update": "%s"\n' "$(json_escape "$rules_time")"
+        printf '  },\n'
+        printf '  "paths": {\n'
+        printf '    "suricataman_log": "%s",\n' "$(json_escape "$LOG_FILE")"
+        printf '    "logrotate": "%s",\n' "$(json_escape "$LOGROTATE_FILE")"
+        printf '    "suricata_logs": "/var/log/suricata",\n'
+        printf '    "suricata_data": "/var/lib/suricata",\n'
+        printf '    "report": "%s"\n' "$(json_escape "$report_file")"
+        printf '  }\n'
+        printf '}\n'
+    } | sudo tee "$report_file" >/dev/null
+
+    log "${GREEN}Reporte JSON creado: $report_file${NC}"
+    echo -e "${GREEN}Reporte JSON creado:${NC} $report_file"
+}
+
+show_events() {
+    echo -e "${BLUE}Ultimos eventos de Suricata${NC}"
+    echo ""
+
+    if [ -f "$SURICATA_FAST_LOG" ]; then
+        echo -e "${YELLOW}$SURICATA_FAST_LOG${NC}"
+        tail -n "$EVENT_LINES" "$SURICATA_FAST_LOG" || true
+    else
+        echo -e "${YELLOW}No existe $SURICATA_FAST_LOG.${NC}"
+    fi
+
+    echo ""
+    if [ -f "$SURICATA_EVE_LOG" ]; then
+        echo -e "${YELLOW}$SURICATA_EVE_LOG${NC}"
+        if command -v jq >/dev/null 2>&1; then
+            tail -n "$EVENT_LINES" "$SURICATA_EVE_LOG" | jq -r '
+                "[\(.timestamp // "sin-fecha")] \(.event_type // "evento") src=\(.src_ip // "-") dst=\(.dest_ip // "-") sig=\(.alert.signature // "-")"
+            ' 2>/dev/null || tail -n "$EVENT_LINES" "$SURICATA_EVE_LOG"
+        else
+            tail -n "$EVENT_LINES" "$SURICATA_EVE_LOG"
+        fi
+    else
+        echo -e "${YELLOW}No existe $SURICATA_EVE_LOG.${NC}"
+    fi
+}
+
+run_upgrade_all() {
+    log "${YELLOW}Ejecutando actualizacion completa de Suricata...${NC}"
+    update_suricata || return 1
+    update_rules || return 1
+    restart_suricata || return 1
+    run_doctor
+}
+
 run_install_flow() {
     install_bc || return 1
     show_progress 2 "Verificando dependencias..."
@@ -884,15 +1084,23 @@ Opciones:
   --restart          Valida configuración y reinicia Suricata.
   --advanced-config  Abre configuración avanzada.
   --show-paths       Muestra rutas y archivos importantes.
+  --status           Muestra un resumen rapido del estado.
   --doctor           Ejecuta diagnostico operativo de Suricata y SURICATAMAN.
   --report           Genera un reporte operativo en /var/log/suricataman/reports.
+  --report-json      Genera un reporte JSON para automatizacion.
+  --events           Muestra ultimos eventos de fast.log y eve.json.
+  --upgrade-all      Actualiza Suricata, reglas, reinicia y ejecuta diagnostico.
   --dry-run          Muestra lo que se haría sin ejecutar cambios reales.
 
 Ejemplos:
   sudo ./suricataman.sh --install
   sudo ./suricataman.sh --update-rules
+  sudo ./suricataman.sh --status
   sudo ./suricataman.sh --doctor
   sudo ./suricataman.sh --report
+  sudo ./suricataman.sh --report-json
+  sudo ./suricataman.sh --events
+  sudo ./suricataman.sh --upgrade-all
   sudo ./suricataman.sh --dry-run --install
 EOF
 }
@@ -939,11 +1147,23 @@ parse_arguments() {
             --show-paths)
                 ACTION="show-paths"
                 ;;
+            --status)
+                ACTION="status"
+                ;;
             --doctor)
                 ACTION="doctor"
                 ;;
             --report)
                 ACTION="report"
+                ;;
+            --report-json)
+                ACTION="report-json"
+                ;;
+            --events)
+                ACTION="events"
+                ;;
+            --upgrade-all)
+                ACTION="upgrade-all"
                 ;;
             *)
                 echo -e "${RED}Opción no reconocida: $arg${NC}"
@@ -973,10 +1193,14 @@ show_menu() {
         echo "6) Reiniciar Suricata"
         echo "7) Configuración avanzada de Suricata"
         echo "8) Ver rutas y archivos importantes"
-        echo "9) Diagnostico operativo"
-        echo "10) Generar reporte operativo"
-        echo "11) Salir"
-        read -r -p "Opción [1-11]: " option
+        echo "9) Estado rapido"
+        echo "10) Diagnostico operativo"
+        echo "11) Generar reporte operativo"
+        echo "12) Generar reporte JSON"
+        echo "13) Ver eventos de Suricata"
+        echo "14) Actualizacion completa"
+        echo "15) Salir"
+        read -r -p "Opción [1-15]: " option
 
         case "$option" in
             1)
@@ -1008,12 +1232,24 @@ show_menu() {
                 manage_paths
                 ;;
             9)
-                run_doctor || true
+                show_status || true
                 ;;
             10)
-                generate_report || true
+                run_doctor || true
                 ;;
             11)
+                generate_report || true
+                ;;
+            12)
+                generate_json_report || true
+                ;;
+            13)
+                show_events || true
+                ;;
+            14)
+                run_upgrade_all || true
+                ;;
+            15)
                 log "${YELLOW}Saliendo del script.${NC}"
                 echo -e "${GREEN}El fichero de logs de Suricataman se encuentra en:${NC}"
                 echo "$LOG_FILE"
@@ -1070,11 +1306,23 @@ main() {
         show-paths)
             manage_paths
             ;;
+        status)
+            show_status
+            ;;
         doctor)
             run_doctor
             ;;
         report)
             generate_report
+            ;;
+        report-json)
+            generate_json_report
+            ;;
+        events)
+            show_events
+            ;;
+        upgrade-all)
+            run_upgrade_all
             ;;
         *)
             show_help

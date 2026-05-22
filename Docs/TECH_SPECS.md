@@ -4,7 +4,7 @@
 
 Herramienta CLI interactiva y no interactiva escrita en Bash para administracion local de Suricata.
 
-Version actual del proyecto: `2.3.0`.
+Version actual del proyecto: `2.4.0`.
 
 ## Arquitectura
 
@@ -25,6 +25,7 @@ SURICATAMAN
 ├── Docs/
 │   ├── INSTALLATION_GUIDE.md
 │   ├── DEPLOY_GUIDE.md
+│   ├── RELEASE_GUIDE.md
 │   ├── TECH_SPECS.md
 │   ├── CHANGELOG.md
 │   └── TODO.md
@@ -52,8 +53,12 @@ SURICATAMAN
 - `update_rules`: ejecuta `suricata-update`.
 - `advanced_config_menu`: permite habilitar o deshabilitar `af-packet`.
 - `manage_paths`: muestra rutas, permisos, contenido y estado de archivos clave.
+- `show_status`: muestra resumen rapido de instalacion, servicio, configuracion, interfaz y reglas.
 - `run_doctor`: ejecuta diagnostico operativo de Suricata y SURICATAMAN.
 - `generate_report`: crea reporte versionado en `/var/log/suricataman/reports`.
+- `generate_json_report`: crea reporte JSON para automatizacion.
+- `show_events`: muestra ultimos eventos desde `fast.log` y `eve.json`.
+- `run_upgrade_all`: actualiza Suricata, reglas, reinicia y ejecuta diagnostico.
 - `parse_arguments`: habilita modo no interactivo.
 - `show_version`: imprime la version actual del proyecto.
 - `show_menu`: experiencia interactiva principal.
@@ -119,13 +124,28 @@ Opciones disponibles:
 - `--restart`
 - `--advanced-config`
 - `--show-paths`
+- `--status`
 - `--doctor`
 - `--report`
+- `--report-json`
+- `--events`
+- `--upgrade-all`
 - `--dry-run`
 
 `--install` ejecuta dependencias, logrotate, instalacion, configuracion, reglas y reinicio. Si `install_suricata` retorna error o cancelacion, no se ejecutan pasos posteriores.
 
-## Diagnostico Operativo
+## Estado y Diagnostico Operativo
+
+`--status` muestra una vista rapida para operacion diaria:
+
+- Suricata instalado;
+- version;
+- estado del servicio;
+- habilitacion al arranque;
+- validez de configuracion;
+- interfaz configurada;
+- ultima actualizacion de reglas;
+- ruta del log de SURICATAMAN.
 
 `--doctor` valida el estado real de la instalacion sin modificar configuracion:
 
@@ -138,7 +158,7 @@ Opciones disponibles:
 - validacion con `suricata -T`;
 - existencia de rutas de reglas, logs y logrotate.
 
-El diagnostico retorna error si detecta fallos criticos. Las advertencias se muestran en pantalla y quedan registradas en el log.
+El diagnostico retorna error si detecta fallos criticos. Las advertencias se muestran en pantalla, quedan registradas en el log y ahora incluyen recomendaciones accionables.
 
 ## Reporte Operativo
 
@@ -149,6 +169,37 @@ El diagnostico retorna error si detecta fallos criticos. Las advertencias se mue
 ```
 
 El reporte incluye version, fecha, resultado de `--doctor` y rutas clave para auditoria o soporte.
+
+`--report-json` crea un informe estructurado en:
+
+```text
+/var/log/suricataman/reports/suricataman-report-YYYYMMDD_HHMMSS.json
+```
+
+El JSON contiene informacion de sistema, version del proyecto, estado de Suricata, servicio, configuracion, interfaz, reglas y rutas clave.
+
+## Eventos
+
+`--events` revisa:
+
+```text
+/var/log/suricata/fast.log
+/var/log/suricata/eve.json
+```
+
+Si `jq` esta disponible, `eve.json` se resume con fecha, tipo de evento, IP origen, IP destino y firma. Si no esta disponible, se muestran las ultimas lineas crudas.
+
+## Actualizacion Completa
+
+`--upgrade-all` ejecuta:
+
+1. actualizacion del paquete Suricata;
+2. actualizacion de reglas;
+3. validacion de configuracion;
+4. reinicio controlado del servicio;
+5. diagnostico final.
+
+Si una etapa critica falla, el flujo se detiene y registra el error.
 
 ## Dry Run
 

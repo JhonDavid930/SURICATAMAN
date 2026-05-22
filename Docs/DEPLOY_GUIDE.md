@@ -49,7 +49,7 @@ sudo suricataman
 Instalar una version concreta:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.3.0
+curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.4.0
 ```
 
 Instalar en una ruta personalizada:
@@ -114,8 +114,12 @@ sudo ./suricataman.sh --update
 sudo ./suricataman.sh --update-rules
 sudo ./suricataman.sh --restart
 sudo ./suricataman.sh --show-paths
+sudo ./suricataman.sh --status
 sudo ./suricataman.sh --doctor
 sudo ./suricataman.sh --report
+sudo ./suricataman.sh --report-json
+sudo ./suricataman.sh --events
+sudo ./suricataman.sh --upgrade-all
 ```
 
 Para revisar acciones sin aplicar cambios reales:
@@ -141,6 +145,11 @@ bash tests/static-check.sh
 - Los logs de SURICATAMAN no se eliminan por defecto.
 - Antes de modificar `suricata.yaml`, se crea un backup versionado.
 - Antes de reiniciar Suricata, se valida la configuracion con `suricata -T`.
+- `--status` muestra una vista rapida de operacion.
 - `--doctor` revisa el estado operativo sin cambiar configuracion.
+- `--doctor` muestra recomendaciones cuando detecta problemas.
 - `--report` guarda un informe en `/var/log/suricataman/reports`.
+- `--report-json` guarda un informe estructurado para automatizacion.
+- `--events` permite revisar ultimas alertas y eventos de Suricata.
+- `--upgrade-all` ejecuta actualizacion completa con diagnostico final.
 - Se recomienda probar primero en una maquina virtual o entorno controlado.

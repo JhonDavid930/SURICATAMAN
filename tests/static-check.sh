@@ -21,6 +21,12 @@ if ! bash "$ROOT_DIR/suricataman.sh" --help | grep -q -- "--report"; then
   echo "No se encontro --report en la ayuda."
   exit 1
 fi
+for option in --status --report-json --events --upgrade-all; do
+  if ! bash "$ROOT_DIR/suricataman.sh" --help | grep -q -- "$option"; then
+    echo "No se encontro $option en la ayuda."
+    exit 1
+  fi
+done
 bash "$ROOT_DIR/install.sh" --help >/dev/null
 bash "$ROOT_DIR/dist/suricataman-standalone.sh" --version >/dev/null
 

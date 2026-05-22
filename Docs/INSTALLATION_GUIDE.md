@@ -8,7 +8,7 @@ Esta guia explica todas las formas soportadas de instalar o ejecutar SURICATAMAN
 | --- | --- |
 | Tienes Git disponible y quieres auditar todo el proyecto | `git clone` |
 | Quieres instalar rapido desde internet | `curl` o `wget` con `install.sh` |
-| Quieres fijar una version concreta | `install.sh --ref v2.3.0` |
+| Quieres fijar una version concreta | `install.sh --ref v2.4.0` |
 | No puedes copiar carpetas, pero si un archivo | `dist/suricataman-standalone.sh` |
 | Puedes copiar solo lo minimo | `suricataman.sh` + `src/suricataman.sh` |
 | No tienes Git, pero puedes descargar archivos | ZIP/TAR.GZ de GitHub |
@@ -43,7 +43,7 @@ sudo suricataman
 Instalar una version especifica:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.3.0
+curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.4.0
 ```
 
 Instalar y ejecutar automaticamente:
@@ -64,7 +64,7 @@ sudo suricataman
 Con version especifica:
 
 ```bash
-wget -qO- https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.3.0
+wget -qO- https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.4.0
 ```
 
 ## Metodo 4: Instalador Local
@@ -93,7 +93,7 @@ sudo /opt/suricataman/suricataman.sh
 Variables soportadas:
 
 ```bash
-SURICATAMAN_REF=v2.3.0
+SURICATAMAN_REF=v2.4.0
 SURICATAMAN_INSTALL_DIR=/opt/suricataman
 SURICATAMAN_BIN_PATH=/usr/local/bin/suricataman
 ```
@@ -181,6 +181,12 @@ Ver rutas importantes:
 sudo suricataman --show-paths
 ```
 
+Ver estado rapido:
+
+```bash
+sudo suricataman --status
+```
+
 Ejecutar diagnostico operativo:
 
 ```bash
@@ -191,6 +197,24 @@ Generar reporte operativo:
 
 ```bash
 sudo suricataman --report
+```
+
+Generar reporte JSON:
+
+```bash
+sudo suricataman --report-json
+```
+
+Ver ultimos eventos:
+
+```bash
+sudo suricataman --events
+```
+
+Ejecutar actualizacion completa:
+
+```bash
+sudo suricataman --upgrade-all
 ```
 
 Simular sin cambios reales:

@@ -17,11 +17,16 @@
 - Validar todos los metodos de instalacion en Kali Linux antes de publicar.
 - Agregar diagnostico operativo con `--doctor`.
 - Agregar reporte operativo versionado con `--report`.
+- Agregar estado rapido con `--status`.
+- Agregar recomendaciones accionables en `--doctor`.
+- Agregar reporte JSON con `--report-json`.
+- Agregar visor de eventos con `--events`.
+- Agregar actualizacion completa con `--upgrade-all`.
 
 ## Pendiente
 
 - Agregar pruebas en contenedores para Ubuntu, Debian, Fedora, Arch y derivados RHEL.
-- Ampliar `--report` con salida JSON opcional.
+- Agregar filtros avanzados para `--events` por tipo, firma, origen y destino.
 - Crear futuras integraciones graficas.
 - Separar mensajes de UI de la logica de instalacion.
 - Publicar capturas nuevas en `Recursos/IMG/`.

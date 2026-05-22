@@ -39,7 +39,7 @@ Variables de entorno:
 
 Ejemplos:
   curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash
-  curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.3.0
+  curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.4.0
   SURICATAMAN_INSTALL_DIR="\$HOME/.local/share/suricataman" bash install.sh --no-symlink
 EOF
 }

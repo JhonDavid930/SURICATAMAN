@@ -2,6 +2,18 @@
 
 Todas las modificaciones relevantes del proyecto se documentan aqui.
 
+## v2.4.0 - Operacion diaria y automatizacion SOC
+
+- Agregado `--status` para ver estado rapido de Suricata y SURICATAMAN.
+- Mejorado `--doctor` con recomendaciones accionables ante fallos o advertencias.
+- Agregado `--report-json` para generar reportes estructurados en JSON.
+- Agregado `--events` para consultar ultimos eventos desde `fast.log` y `eve.json`.
+- Agregado `--upgrade-all` para actualizar Suricata, reglas, reiniciar y diagnosticar.
+- Ampliado menu interactivo con estado rapido, reporte JSON, eventos y actualizacion completa.
+- Agregada `Docs/RELEASE_GUIDE.md` para publicar releases de forma ordenada.
+- Actualizada documentacion y tests estaticos para los nuevos flags.
+- Regenerado artefacto standalone con todas las opciones operativas.
+
 ## v2.3.0 - Diagnostico y reportes operativos
 
 - Agregado modo `--doctor` para validar estado de Suricata y SURICATAMAN.
