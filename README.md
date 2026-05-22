@@ -1,6 +1,6 @@
 # SURICATAMAN
 
-Version actual: `2.4.0`
+Version actual: `2.5.0`
 
 SURICATAMAN es una herramienta Bash para instalar, configurar, actualizar, endurecer y administrar Suricata de forma guiada o automatizada en distribuciones Linux compatibles.
 
@@ -25,7 +25,11 @@ Video tutorial: [Instalacion automatica de Suricata](https://www.youtube.com/wat
 - Reporte operativo versionado con `--report`.
 - Reporte JSON con `--report-json`.
 - Visualizacion de eventos con `--events`.
+- Filtros de eventos por tipo, limite, origen y destino.
+- Exportacion de eventos con `--events-json`.
 - Actualizacion completa con `--upgrade-all`.
+- Health-check para cron o monitorizacion con `--health-check`.
+- Bundle de soporte con `--support-bundle`.
 - Modo no interactivo y modo `--dry-run`.
 
 ## Estructura del Proyecto
@@ -88,7 +92,7 @@ sudo suricataman
 Para instalar una version concreta:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.4.0
+curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.5.0
 ```
 
 ### 3. Instalador remoto con wget
@@ -144,8 +148,11 @@ Menu disponible:
 11) Generar reporte operativo
 12) Generar reporte JSON
 13) Ver eventos de Suricata
-14) Actualizacion completa
-15) Salir
+14) Exportar eventos JSON
+15) Actualizacion completa
+16) Health-check
+17) Crear bundle de soporte
+18) Salir
 ```
 
 ## Uso No Interactivo
@@ -166,7 +173,11 @@ sudo ./suricataman.sh --doctor
 sudo ./suricataman.sh --report
 sudo ./suricataman.sh --report-json
 sudo ./suricataman.sh --events
+sudo ./suricataman.sh --events --alerts --limit 50
+sudo ./suricataman.sh --events-json --ssh
 sudo ./suricataman.sh --upgrade-all
+sudo ./suricataman.sh --health-check
+sudo ./suricataman.sh --support-bundle
 ```
 
 Ejemplos:
@@ -179,7 +190,11 @@ sudo ./suricataman.sh --doctor
 sudo ./suricataman.sh --report
 sudo ./suricataman.sh --report-json
 sudo ./suricataman.sh --events
+sudo ./suricataman.sh --events --src 192.168.1.10
+sudo ./suricataman.sh --events-json --alerts --limit 100
 sudo ./suricataman.sh --upgrade-all
+sudo ./suricataman.sh --health-check
+sudo ./suricataman.sh --support-bundle
 sudo ./suricataman.sh --dry-run --install
 ```
 
@@ -223,6 +238,19 @@ sudo ./suricataman.sh --report-json
 
 `--events` muestra las ultimas lineas de `fast.log` y `eve.json`. Si `jq` esta instalado, resume `eve.json` con campos utiles como fecha, tipo de evento, origen, destino y firma.
 
+Filtros disponibles:
+
+```bash
+sudo ./suricataman.sh --events --alerts
+sudo ./suricataman.sh --events --ssh
+sudo ./suricataman.sh --events --dns
+sudo ./suricataman.sh --events --limit 50
+sudo ./suricataman.sh --events --src 192.168.1.10
+sudo ./suricataman.sh --events --dst 8.8.8.8
+```
+
+`--events-json` exporta eventos filtrados desde `eve.json` en formato JSON.
+
 `--upgrade-all` ejecuta un flujo completo:
 
 - actualiza Suricata;
@@ -230,6 +258,10 @@ sudo ./suricataman.sh --report-json
 - valida configuracion;
 - reinicia el servicio;
 - ejecuta diagnostico operativo.
+
+`--health-check` ejecuta una comprobacion pensada para cron o monitorizacion y retorna codigo `0` si todo esta correcto.
+
+`--support-bundle` crea un paquete `.tar.gz` en `/var/log/suricataman/reports/` con diagnostico, estado, eventos, logs y resumen de configuracion.
 
 ## Rutas Importantes
 
@@ -251,7 +283,7 @@ El workflow de GitHub Actions ejecuta la misma validacion en cada `push` y `pull
 
 ## Versionado
 
-- Version actual: `2.4.0`.
+- Version actual: `2.5.0`.
 - Fuente de version del repositorio: `VERSION`.
 - Historial de cambios: [Docs/CHANGELOG.md](Docs/CHANGELOG.md).
 

@@ -22,11 +22,15 @@
 - Agregar reporte JSON con `--report-json`.
 - Agregar visor de eventos con `--events`.
 - Agregar actualizacion completa con `--upgrade-all`.
+- Agregar filtros para `--events`.
+- Agregar exportacion de eventos con `--events-json`.
+- Agregar health-check para cron con `--health-check`.
+- Agregar bundle de soporte con `--support-bundle`.
 
 ## Pendiente
 
 - Agregar pruebas en contenedores para Ubuntu, Debian, Fedora, Arch y derivados RHEL.
-- Agregar filtros avanzados para `--events` por tipo, firma, origen y destino.
+- Agregar filtros por firma para eventos.
 - Crear futuras integraciones graficas.
 - Separar mensajes de UI de la logica de instalacion.
 - Publicar capturas nuevas en `Recursos/IMG/`.

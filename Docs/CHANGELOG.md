@@ -2,6 +2,14 @@
 
 Todas las modificaciones relevantes del proyecto se documentan aqui.
 
+## v2.5.0 - Eventos filtrados y soporte operativo
+
+- Agregados filtros para `--events`: `--alerts`, `--ssh`, `--dns`, `--limit`, `--src` y `--dst`.
+- Agregado `--events-json` para exportar eventos filtrados desde `eve.json` como JSON.
+- Agregado `--health-check` para cron o monitorizacion.
+- Agregado `--support-bundle` para empaquetar diagnostico, eventos, logs y resumen de configuracion.
+- Actualizados tests, documentacion y standalone para los nuevos comandos.
+
 ## v2.4.0 - Operacion diaria y automatizacion SOC
 
 - Agregado `--status` para ver estado rapido de Suricata y SURICATAMAN.

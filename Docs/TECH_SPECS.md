@@ -4,7 +4,7 @@
 
 Herramienta CLI interactiva y no interactiva escrita en Bash para administracion local de Suricata.
 
-Version actual del proyecto: `2.4.0`.
+Version actual del proyecto: `2.5.0`.
 
 ## Arquitectura
 
@@ -58,7 +58,10 @@ SURICATAMAN
 - `generate_report`: crea reporte versionado en `/var/log/suricataman/reports`.
 - `generate_json_report`: crea reporte JSON para automatizacion.
 - `show_events`: muestra ultimos eventos desde `fast.log` y `eve.json`.
+- `show_events_json`: exporta eventos filtrados desde `eve.json` como JSON.
 - `run_upgrade_all`: actualiza Suricata, reglas, reinicia y ejecuta diagnostico.
+- `run_health_check`: ejecuta comprobacion silenciosa para cron o monitorizacion.
+- `create_support_bundle`: empaqueta estado, diagnostico, eventos, logs y resumen de configuracion.
 - `parse_arguments`: habilita modo no interactivo.
 - `show_version`: imprime la version actual del proyecto.
 - `show_menu`: experiencia interactiva principal.
@@ -129,7 +132,16 @@ Opciones disponibles:
 - `--report`
 - `--report-json`
 - `--events`
+- `--events-json`
+- `--alerts`
+- `--ssh`
+- `--dns`
+- `--limit`
+- `--src`
+- `--dst`
 - `--upgrade-all`
+- `--health-check`
+- `--support-bundle`
 - `--dry-run`
 
 `--install` ejecuta dependencias, logrotate, instalacion, configuracion, reglas y reinicio. Si `install_suricata` retorna error o cancelacion, no se ejecutan pasos posteriores.
@@ -188,6 +200,34 @@ El JSON contiene informacion de sistema, version del proyecto, estado de Suricat
 ```
 
 Si `jq` esta disponible, `eve.json` se resume con fecha, tipo de evento, IP origen, IP destino y firma. Si no esta disponible, se muestran las ultimas lineas crudas.
+
+Filtros soportados:
+
+- `--alerts`: eventos `alert`.
+- `--ssh`: eventos `ssh`.
+- `--dns`: eventos `dns`.
+- `--limit N`: numero de lineas/eventos revisados.
+- `--src IP`: filtro por IP origen.
+- `--dst IP`: filtro por IP destino.
+
+`--events-json` exporta eventos filtrados como JSON usando `jq`.
+
+## Health-check y Bundle de Soporte
+
+`--health-check` ejecuta `--doctor` de forma silenciosa y retorna:
+
+- `0` si no hay fallos criticos;
+- `1` si hay problemas.
+
+`--support-bundle` crea un `.tar.gz` en `/var/log/suricataman/reports/` con:
+
+- `status.txt`;
+- `doctor.txt`;
+- `events.txt`;
+- salida de reporte JSON;
+- log de SURICATAMAN;
+- ultimas lineas de `journalctl -u suricata.service`;
+- resumen inicial de `suricata.yaml`.
 
 ## Actualizacion Completa
 

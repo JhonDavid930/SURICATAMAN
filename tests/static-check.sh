@@ -13,16 +13,17 @@ bash -n "$ROOT_DIR/dist/suricataman-standalone.sh"
 bash "$ROOT_DIR/suricataman.sh" --help >/dev/null
 bash "$ROOT_DIR/suricataman.sh" --dry-run --help >/dev/null
 bash "$ROOT_DIR/suricataman.sh" --version >/dev/null
-if ! bash "$ROOT_DIR/suricataman.sh" --help | grep -q -- "--doctor"; then
+HELP_OUTPUT="$(bash "$ROOT_DIR/suricataman.sh" --help)"
+if ! grep -q -- "--doctor" <<<"$HELP_OUTPUT"; then
   echo "No se encontro --doctor en la ayuda."
   exit 1
 fi
-if ! bash "$ROOT_DIR/suricataman.sh" --help | grep -q -- "--report"; then
+if ! grep -q -- "--report" <<<"$HELP_OUTPUT"; then
   echo "No se encontro --report en la ayuda."
   exit 1
 fi
-for option in --status --report-json --events --upgrade-all; do
-  if ! bash "$ROOT_DIR/suricataman.sh" --help | grep -q -- "$option"; then
+for option in --status --report-json --events --events-json --health-check --support-bundle --upgrade-all --limit --src --dst; do
+  if ! grep -q -- "$option" <<<"$HELP_OUTPUT"; then
     echo "No se encontro $option en la ayuda."
     exit 1
   fi

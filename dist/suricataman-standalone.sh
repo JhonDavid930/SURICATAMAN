@@ -13,7 +13,7 @@ PURPLE='\033[0;35m'
 NC='\033[0m'
 
 # Variables globales
-PROJECT_VERSION="2.4.0"
+PROJECT_VERSION="2.5.0"
 LOG_DIR="/var/log/suricataman"
 LOG_FILE="$LOG_DIR/suricataman.log"
 LOGROTATE_FILE="/etc/logrotate.d/suricataman"
@@ -29,6 +29,9 @@ DOCTOR_WARNINGS=0
 DOCTOR_FAILURES=0
 LOG_STDOUT=true
 EVENT_LINES=20
+EVENT_FILTER_TYPE=""
+EVENT_FILTER_SRC=""
+EVENT_FILTER_DST=""
 
 log() {
     local message="$1"
@@ -741,6 +744,23 @@ json_escape() {
     printf '%s' "$value"
 }
 
+set_event_filter_type() {
+    local event_type="$1"
+
+    EVENT_FILTER_TYPE="$event_type"
+}
+
+validate_event_options() {
+    if ! [[ "$EVENT_LINES" =~ ^[0-9]+$ ]] || [ "$EVENT_LINES" -lt 1 ]; then
+        echo -e "${RED}--limit debe ser un numero mayor que 0.${NC}"
+        return 1
+    fi
+}
+
+show_event_filters() {
+    echo "Filtros: tipo=${EVENT_FILTER_TYPE:-todos}, src=${EVENT_FILTER_SRC:-cualquiera}, dst=${EVENT_FILTER_DST:-cualquiera}, limite=$EVENT_LINES"
+}
+
 run_doctor() {
     local suricata_version="No instalado"
     local service_active="No disponible"
@@ -1017,30 +1037,93 @@ generate_json_report() {
     echo -e "${GREEN}Reporte JSON creado:${NC} $report_file"
 }
 
-show_events() {
-    echo -e "${BLUE}Ultimos eventos de Suricata${NC}"
-    echo ""
+show_fast_events() {
+    local fast_output
 
-    if [ -f "$SURICATA_FAST_LOG" ]; then
-        echo -e "${YELLOW}$SURICATA_FAST_LOG${NC}"
-        tail -n "$EVENT_LINES" "$SURICATA_FAST_LOG" || true
-    else
+    if [ ! -f "$SURICATA_FAST_LOG" ]; then
         echo -e "${YELLOW}No existe $SURICATA_FAST_LOG.${NC}"
+        return 0
     fi
 
-    echo ""
-    if [ -f "$SURICATA_EVE_LOG" ]; then
-        echo -e "${YELLOW}$SURICATA_EVE_LOG${NC}"
-        if command -v jq >/dev/null 2>&1; then
-            tail -n "$EVENT_LINES" "$SURICATA_EVE_LOG" | jq -r '
-                "[\(.timestamp // "sin-fecha")] \(.event_type // "evento") src=\(.src_ip // "-") dst=\(.dest_ip // "-") sig=\(.alert.signature // "-")"
-            ' 2>/dev/null || tail -n "$EVENT_LINES" "$SURICATA_EVE_LOG"
-        else
-            tail -n "$EVENT_LINES" "$SURICATA_EVE_LOG"
-        fi
-    else
-        echo -e "${YELLOW}No existe $SURICATA_EVE_LOG.${NC}"
+    echo -e "${YELLOW}$SURICATA_FAST_LOG${NC}"
+    fast_output="$(tail -n "$EVENT_LINES" "$SURICATA_FAST_LOG" 2>/dev/null || true)"
+
+    if [ -n "$EVENT_FILTER_SRC" ]; then
+        fast_output="$(printf '%s\n' "$fast_output" | grep -F "$EVENT_FILTER_SRC" || true)"
     fi
+
+    if [ -n "$EVENT_FILTER_DST" ]; then
+        fast_output="$(printf '%s\n' "$fast_output" | grep -F "$EVENT_FILTER_DST" || true)"
+    fi
+
+    if [ -n "$EVENT_FILTER_TYPE" ]; then
+        fast_output="$(printf '%s\n' "$fast_output" | grep -i "$EVENT_FILTER_TYPE" || true)"
+    fi
+
+    if [ -n "$fast_output" ]; then
+        printf '%s\n' "$fast_output"
+    else
+        echo "No hay eventos fast.log que coincidan con los filtros."
+    fi
+}
+
+show_eve_events() {
+    if [ ! -f "$SURICATA_EVE_LOG" ]; then
+        echo -e "${YELLOW}No existe $SURICATA_EVE_LOG.${NC}"
+        return 0
+    fi
+
+    echo -e "${YELLOW}$SURICATA_EVE_LOG${NC}"
+    if command -v jq >/dev/null 2>&1; then
+        tail -n "$EVENT_LINES" "$SURICATA_EVE_LOG" | jq -Rr \
+            --arg event_type "$EVENT_FILTER_TYPE" \
+            --arg src_ip "$EVENT_FILTER_SRC" \
+            --arg dst_ip "$EVENT_FILTER_DST" '
+            fromjson? |
+            select(($event_type == "" or .event_type == $event_type) and
+                   ($src_ip == "" or .src_ip == $src_ip) and
+                   ($dst_ip == "" or .dest_ip == $dst_ip))
+            | "[\(.timestamp // "sin-fecha")] \(.event_type // "evento") src=\(.src_ip // "-") dst=\(.dest_ip // "-") sig=\(.alert.signature // "-")"
+        ' 2>/dev/null || tail -n "$EVENT_LINES" "$SURICATA_EVE_LOG"
+    else
+        tail -n "$EVENT_LINES" "$SURICATA_EVE_LOG"
+    fi
+}
+
+show_events() {
+    validate_event_options || return 1
+    echo -e "${BLUE}Ultimos eventos de Suricata${NC}"
+    show_event_filters
+    echo ""
+    show_fast_events
+
+    echo ""
+    show_eve_events
+}
+
+show_events_json() {
+    validate_event_options || return 1
+
+    if [ ! -f "$SURICATA_EVE_LOG" ]; then
+        echo -e "${RED}No existe $SURICATA_EVE_LOG. No se pueden exportar eventos JSON.${NC}"
+        return 1
+    fi
+
+    if ! command -v jq >/dev/null 2>&1; then
+        echo -e "${RED}jq es necesario para --events-json.${NC}"
+        return 1
+    fi
+
+    tail -n "$EVENT_LINES" "$SURICATA_EVE_LOG" | jq -R -s \
+        --arg event_type "$EVENT_FILTER_TYPE" \
+        --arg src_ip "$EVENT_FILTER_SRC" \
+        --arg dst_ip "$EVENT_FILTER_DST" '
+        split("\n") |
+        map(fromjson?) |
+        map(select(($event_type == "" or .event_type == $event_type) and
+                   ($src_ip == "" or .src_ip == $src_ip) and
+                   ($dst_ip == "" or .dest_ip == $dst_ip)))
+    '
 }
 
 run_upgrade_all() {
@@ -1049,6 +1132,86 @@ run_upgrade_all() {
     update_rules || return 1
     restart_suricata || return 1
     run_doctor
+}
+
+run_health_check() {
+    LOG_STDOUT=false
+    if run_doctor >/dev/null; then
+        LOG_STDOUT=true
+        echo -e "${GREEN}Health-check OK: Suricata operativo.${NC}"
+        return 0
+    fi
+
+    LOG_STDOUT=true
+    echo -e "${RED}Health-check con problemas. Ejecuta sudo suricataman --doctor para ver detalles.${NC}"
+    return 1
+}
+
+create_support_bundle() {
+    local timestamp
+    local bundle_dir
+    local bundle_file
+    local old_red="$RED"
+    local old_green="$GREEN"
+    local old_yellow="$YELLOW"
+    local old_blue="$BLUE"
+    local old_purple="$PURPLE"
+    local old_nc="$NC"
+    local old_log_stdout="$LOG_STDOUT"
+
+    timestamp="$(date '+%Y%m%d_%H%M%S')"
+    bundle_dir="$REPORT_DIR/support-bundle-$timestamp"
+    bundle_file="$REPORT_DIR/suricataman-support-bundle-$timestamp.tar.gz"
+
+    if [ "$DRY_RUN" = true ]; then
+        log "${YELLOW}[DRY-RUN] Crear bundle de soporte en $bundle_file${NC}"
+        return 0
+    fi
+
+    sudo mkdir -p "$bundle_dir" || { log "${RED}No se pudo crear $bundle_dir.${NC}"; return 1; }
+
+    RED=""
+    GREEN=""
+    YELLOW=""
+    BLUE=""
+    PURPLE=""
+    NC=""
+    LOG_STDOUT=false
+
+    show_status > /tmp/suricataman-status.txt 2>&1 || true
+    run_doctor > /tmp/suricataman-doctor.txt 2>&1 || true
+    show_events > /tmp/suricataman-events.txt 2>&1 || true
+    generate_json_report >/tmp/suricataman-report-json-path.txt 2>&1 || true
+
+    RED="$old_red"
+    GREEN="$old_green"
+    YELLOW="$old_yellow"
+    BLUE="$old_blue"
+    PURPLE="$old_purple"
+    NC="$old_nc"
+    LOG_STDOUT="$old_log_stdout"
+
+    sudo cp /tmp/suricataman-status.txt "$bundle_dir/status.txt"
+    sudo cp /tmp/suricataman-doctor.txt "$bundle_dir/doctor.txt"
+    sudo cp /tmp/suricataman-events.txt "$bundle_dir/events.txt"
+    sudo cp /tmp/suricataman-report-json-path.txt "$bundle_dir/report-json-output.txt"
+    sudo cp "$LOG_FILE" "$bundle_dir/suricataman.log" 2>/dev/null || true
+    sudo journalctl -u suricata.service -n 80 --no-pager > /tmp/suricataman-service-journal.txt 2>/dev/null || true
+    sudo cp /tmp/suricataman-service-journal.txt "$bundle_dir/suricata-service-journal.txt" 2>/dev/null || true
+    sudo sed -n '1,80p' "$SURICATA_CONFIG" > /tmp/suricataman-config-summary.txt 2>/dev/null || true
+    sudo cp /tmp/suricataman-config-summary.txt "$bundle_dir/suricata-config-summary.txt" 2>/dev/null || true
+
+    sudo tar -czf "$bundle_file" -C "$REPORT_DIR" "$(basename "$bundle_dir")" || {
+        log "${RED}No se pudo crear el bundle de soporte.${NC}"
+        return 1
+    }
+    sudo rm -rf "$bundle_dir"
+    rm -f /tmp/suricataman-status.txt /tmp/suricataman-doctor.txt /tmp/suricataman-events.txt \
+        /tmp/suricataman-report-json-path.txt /tmp/suricataman-service-journal.txt \
+        /tmp/suricataman-config-summary.txt
+
+    log "${GREEN}Bundle de soporte creado: $bundle_file${NC}"
+    echo -e "${GREEN}Bundle de soporte creado:${NC} $bundle_file"
 }
 
 run_install_flow() {
@@ -1091,7 +1254,16 @@ Opciones:
   --report           Genera un reporte operativo en /var/log/suricataman/reports.
   --report-json      Genera un reporte JSON para automatizacion.
   --events           Muestra ultimos eventos de fast.log y eve.json.
+  --events-json      Exporta eventos filtrados desde eve.json como JSON.
+  --alerts           Filtra eventos tipo alert.
+  --ssh              Filtra eventos SSH.
+  --dns              Filtra eventos DNS.
+  --limit N          Limita el numero de eventos revisados.
+  --src IP           Filtra eventos por IP origen.
+  --dst IP           Filtra eventos por IP destino.
   --upgrade-all      Actualiza Suricata, reglas, reinicia y ejecuta diagnostico.
+  --health-check     Ejecuta comprobacion silenciosa para cron/monitorizacion.
+  --support-bundle   Genera paquete de soporte con diagnostico, eventos y logs.
   --dry-run          Muestra lo que se haría sin ejecutar cambios reales.
 
 Ejemplos:
@@ -1102,7 +1274,11 @@ Ejemplos:
   sudo ./suricataman.sh --report
   sudo ./suricataman.sh --report-json
   sudo ./suricataman.sh --events
+  sudo ./suricataman.sh --events --alerts --limit 50
+  sudo ./suricataman.sh --events-json --ssh
   sudo ./suricataman.sh --upgrade-all
+  sudo ./suricataman.sh --health-check
+  sudo ./suricataman.sh --support-bundle
   sudo ./suricataman.sh --dry-run --install
 EOF
 }
@@ -1112,63 +1288,126 @@ show_version() {
 }
 
 parse_arguments() {
-    local arg
-
-    for arg in "$@"; do
-        case "$arg" in
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
             --dry-run)
                 DRY_RUN=true
+                shift
                 ;;
             --help)
                 ACTION="help"
+                shift
                 ;;
             --version)
                 ACTION="version"
+                shift
                 ;;
             --install)
                 ACTION="install"
+                shift
                 ;;
             --uninstall)
                 ACTION="uninstall"
+                shift
                 ;;
             --update)
                 ACTION="update"
+                shift
                 ;;
             --configure)
                 ACTION="configure"
+                shift
                 ;;
             --update-rules)
                 ACTION="update-rules"
+                shift
                 ;;
             --restart)
                 ACTION="restart"
+                shift
                 ;;
             --advanced-config)
                 ACTION="advanced-config"
+                shift
                 ;;
             --show-paths)
                 ACTION="show-paths"
+                shift
                 ;;
             --status)
                 ACTION="status"
+                shift
                 ;;
             --doctor)
                 ACTION="doctor"
+                shift
                 ;;
             --report)
                 ACTION="report"
+                shift
                 ;;
             --report-json)
                 ACTION="report-json"
+                shift
                 ;;
             --events)
                 ACTION="events"
+                shift
+                ;;
+            --events-json)
+                ACTION="events-json"
+                shift
+                ;;
+            --alerts)
+                set_event_filter_type "alert"
+                shift
+                ;;
+            --ssh)
+                set_event_filter_type "ssh"
+                shift
+                ;;
+            --dns)
+                set_event_filter_type "dns"
+                shift
+                ;;
+            --limit)
+                if [ "${2:-}" = "" ]; then
+                    echo -e "${RED}--limit requiere un numero.${NC}"
+                    exit 1
+                fi
+                EVENT_LINES="$2"
+                shift 2
+                ;;
+            --src)
+                if [ "${2:-}" = "" ]; then
+                    echo -e "${RED}--src requiere una IP.${NC}"
+                    exit 1
+                fi
+                EVENT_FILTER_SRC="$2"
+                shift 2
+                ;;
+            --dst)
+                if [ "${2:-}" = "" ]; then
+                    echo -e "${RED}--dst requiere una IP.${NC}"
+                    exit 1
+                fi
+                EVENT_FILTER_DST="$2"
+                shift 2
                 ;;
             --upgrade-all)
                 ACTION="upgrade-all"
+                shift
+                ;;
+            --health-check)
+                ACTION="health-check"
+                shift
+                ;;
+            --support-bundle)
+                ACTION="support-bundle"
+                shift
                 ;;
             *)
-                echo -e "${RED}Opción no reconocida: $arg${NC}"
+                echo -e "${RED}Opción no reconocida: $1${NC}"
                 show_help
                 exit 1
                 ;;
@@ -1200,9 +1439,12 @@ show_menu() {
         echo "11) Generar reporte operativo"
         echo "12) Generar reporte JSON"
         echo "13) Ver eventos de Suricata"
-        echo "14) Actualizacion completa"
-        echo "15) Salir"
-        read -r -p "Opción [1-15]: " option
+        echo "14) Exportar eventos JSON"
+        echo "15) Actualizacion completa"
+        echo "16) Health-check"
+        echo "17) Crear bundle de soporte"
+        echo "18) Salir"
+        read -r -p "Opción [1-18]: " option
 
         case "$option" in
             1)
@@ -1249,9 +1491,18 @@ show_menu() {
                 show_events || true
                 ;;
             14)
-                run_upgrade_all || true
+                show_events_json || true
                 ;;
             15)
+                run_upgrade_all || true
+                ;;
+            16)
+                run_health_check || true
+                ;;
+            17)
+                create_support_bundle || true
+                ;;
+            18)
                 log "${YELLOW}Saliendo del script.${NC}"
                 echo -e "${GREEN}El fichero de logs de Suricataman se encuentra en:${NC}"
                 echo "$LOG_FILE"
@@ -1275,6 +1526,10 @@ main() {
     if [ "$ACTION" = "version" ]; then
         show_version
         exit 0
+    fi
+
+    if [ "$ACTION" = "events-json" ] || [ "$ACTION" = "health-check" ]; then
+        LOG_STDOUT=false
     fi
 
     check_root
@@ -1323,8 +1578,17 @@ main() {
         events)
             show_events
             ;;
+        events-json)
+            show_events_json
+            ;;
         upgrade-all)
             run_upgrade_all
+            ;;
+        health-check)
+            run_health_check
+            ;;
+        support-bundle)
+            create_support_bundle
             ;;
         *)
             show_help
