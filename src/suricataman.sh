@@ -11,7 +11,7 @@ PURPLE='\033[0;35m'
 NC='\033[0m'
 
 # Variables globales
-PROJECT_VERSION="2.5.0"
+PROJECT_VERSION="2.6.0"
 LOG_DIR="/var/log/suricataman"
 LOG_FILE="$LOG_DIR/suricataman.log"
 LOGROTATE_FILE="/etc/logrotate.d/suricataman"

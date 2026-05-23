@@ -9,6 +9,16 @@ bash -n "$ROOT_DIR/src/suricataman.sh"
 bash -n "$ROOT_DIR/install.sh"
 bash -n "$ROOT_DIR/scripts/build-standalone.sh"
 bash -n "$ROOT_DIR/dist/suricataman-standalone.sh"
+if command -v python3 >/dev/null 2>&1 && python3 --version >/dev/null 2>&1; then
+  python3 -m py_compile \
+    "$ROOT_DIR/console/backend/suricataman_console/app.py" \
+    "$ROOT_DIR/console/backend/suricataman_console/command.py" \
+    "$ROOT_DIR/console/backend/suricataman_console/config.py" \
+    "$ROOT_DIR/console/backend/suricataman_console/parsers.py" \
+    "$ROOT_DIR/console/backend/suricataman_console/rules.py"
+else
+  echo "python3 no esta instalado; se omitio la validacion Python."
+fi
 
 bash "$ROOT_DIR/suricataman.sh" --help >/dev/null
 bash "$ROOT_DIR/suricataman.sh" --dry-run --help >/dev/null

@@ -12,6 +12,8 @@ temp/
 # Artefactos de pruebas locales
 coverage/
 test-results/
+.pytest_cache/
+__pycache__/
 
 # Entornos locales
 .env

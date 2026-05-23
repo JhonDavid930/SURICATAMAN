@@ -4,7 +4,7 @@
 
 Herramienta CLI interactiva y no interactiva escrita en Bash para administracion local de Suricata.
 
-Version actual del proyecto: `2.5.0`.
+Version actual del proyecto: `2.6.0`.
 
 ## Arquitectura
 
@@ -20,6 +20,9 @@ SURICATAMAN
 │   └── build-standalone.sh     # Generador de distribucion standalone
 ├── dist/
 │   └── suricataman-standalone.sh
+├── console/
+│   ├── backend/                # API local FastAPI
+│   └── frontend/               # UI React + Vite
 ├── .github/workflows/
 │   └── static-check.yml        # CI con ShellCheck
 ├── Docs/
@@ -79,6 +82,17 @@ El repositorio mantiene la estructura profesional principal, pero ofrece varias 
 
 La guia operativa completa vive en `Docs/INSTALLATION_GUIDE.md`.
 
+## SURICATAMAN Console
+
+`console/` agrega una capa grafica local sin reemplazar el CLI Bash.
+
+- Backend FastAPI en `127.0.0.1:8000`.
+- Frontend React + Vite en `127.0.0.1:5173`.
+- CORS limitado a origenes locales `localhost` y `127.0.0.1` para permitir puertos de desarrollo o preview sin abrir acceso remoto.
+- Endpoints predefinidos para estado, doctor, eventos, reglas, health-check, actualizacion, reinicio y bundle.
+- La gestion de reglas usa `/etc/suricata/disable.conf`, crea backup, ejecuta `suricata-update`, valida con `suricata -T` y reinicia solo si la validacion pasa.
+- La v0.1 no expone acceso remoto, usuarios ni multi-host.
+
 `install.sh` instala por defecto en:
 
 ```text
@@ -112,6 +126,15 @@ Antes de publicar `v2.2.0`, la instalacion se valido en Kali Linux con:
 - TAR.GZ extraido.
 
 Cada metodo ejecuto instalacion real de Suricata, actualizacion de reglas, validacion con `suricata -T`, habilitacion del servicio y verificacion de `suricata.service` como `active`.
+
+La consola v0.1 se valido en Kali Linux mediante backend FastAPI local, tunel SSH hacia el anfitrion y frontend React en preview local. Se comprobaron:
+
+- `GET /api/status` con Suricata instalado, activo, habilitado e interfaz `eth0`.
+- `GET /api/doctor` con 0 fallos y 0 advertencias.
+- `GET /api/events` leyendo eventos reales desde `eve.json`.
+- `GET /api/rules` leyendo reglas reales desde `/var/lib/suricata/rules/suricata.rules`.
+- `POST /api/health-check`, `POST /api/support-bundle` y `POST /api/restart`.
+- ciclo reversible `POST /api/rules/{sid}/disable` y `POST /api/rules/{sid}/enable` con backup, validacion y servicio activo al finalizar.
 
 ## Modo No Interactivo
 

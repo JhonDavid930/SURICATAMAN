@@ -2,6 +2,17 @@
 
 Todas las modificaciones relevantes del proyecto se documentan aqui.
 
+## v2.6.0 - SURICATAMAN Console v0.1
+
+- Agregada primera consola grafica local en `console/`.
+- Agregado backend FastAPI con endpoints para estado, doctor, eventos, reglas, reinicio, health-check y support-bundle.
+- Agregado frontend React + Vite con dashboard, eventos y gestion basica de reglas.
+- La consola escucha en localhost y solo usa acciones predefinidas.
+- La gestion de reglas crea backup y valida Suricata antes de reiniciar.
+- CORS limitado a origenes locales para soportar puertos de desarrollo y preview sin abrir acceso remoto.
+- Validada en Kali Linux con Suricata real, eventos reales, lectura de reglas, health-check, support-bundle, restart y ciclo reversible disable/enable de regla.
+- Actualizada documentacion y validacion estatica para incluir backend Python.
+
 ## v2.5.0 - Eventos filtrados y soporte operativo
 
 - Agregados filtros para `--events`: `--alerts`, `--ssh`, `--dns`, `--limit`, `--src` y `--dst`.

@@ -49,7 +49,7 @@ sudo suricataman
 Instalar una version concreta:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.5.0
+curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.6.0
 ```
 
 Instalar en una ruta personalizada:

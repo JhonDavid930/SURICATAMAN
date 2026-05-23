@@ -1,6 +1,6 @@
 # SURICATAMAN
 
-Version actual: `2.5.0`
+Version actual: `2.6.0`
 
 SURICATAMAN es una herramienta Bash para instalar, configurar, actualizar, endurecer y administrar Suricata de forma guiada o automatizada en distribuciones Linux compatibles.
 
@@ -30,6 +30,7 @@ Video tutorial: [Instalacion automatica de Suricata](https://www.youtube.com/wat
 - Actualizacion completa con `--upgrade-all`.
 - Health-check para cron o monitorizacion con `--health-check`.
 - Bundle de soporte con `--support-bundle`.
+- Console web local v0.1 para dashboard, eventos y reglas.
 - Modo no interactivo y modo `--dry-run`.
 
 ## Estructura del Proyecto
@@ -46,6 +47,9 @@ SURICATAMAN
 │   └── build-standalone.sh
 ├── dist/
 │   └── suricataman-standalone.sh
+├── console/
+│   ├── backend/
+│   └── frontend/
 ├── Docs/
 │   ├── ANALISIS_PROYECTO.md
 │   ├── TECH_SPECS.md
@@ -64,6 +68,45 @@ SURICATAMAN
 chmod +x suricataman.sh src/suricataman.sh
 sudo ./suricataman.sh
 ```
+
+## SURICATAMAN Console
+
+La consola grafica local vive en `console/` y ofrece dashboard, eventos, reglas y acciones seguras desde navegador.
+
+Backend:
+
+```bash
+cd console/backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+sudo .venv/bin/uvicorn suricataman_console.app:app --host 127.0.0.1 --port 8000
+```
+
+Frontend:
+
+```bash
+cd console/frontend
+npm install
+npm run dev
+```
+
+Abrir `http://127.0.0.1:5173`.
+
+Para revisar la version compilada:
+
+```bash
+npm run build
+npm run preview -- --port 4173
+```
+
+Uso con una VM Linux por SSH:
+
+```bash
+ssh -N -L 8000:127.0.0.1:8000 usuario@IP_DE_LA_VM
+```
+
+El backend se ejecuta dentro de la VM en `127.0.0.1:8000`, y el navegador local consume la API a traves del tunel. La v0.1 mantiene la consola en localhost; no expone administracion remota directa.
 
 ## Formas de Instalacion
 
@@ -92,7 +135,7 @@ sudo suricataman
 Para instalar una version concreta:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.5.0
+curl -fsSL https://raw.githubusercontent.com/JhonDavid930/SURICATAMAN/main/install.sh | sudo bash -s -- --ref v2.6.0
 ```
 
 ### 3. Instalador remoto con wget
@@ -283,7 +326,7 @@ El workflow de GitHub Actions ejecuta la misma validacion en cada `push` y `pull
 
 ## Versionado
 
-- Version actual: `2.5.0`.
+- Version actual: `2.6.0`.
 - Fuente de version del repositorio: `VERSION`.
 - Historial de cambios: [Docs/CHANGELOG.md](Docs/CHANGELOG.md).
 
